@@ -28,7 +28,7 @@ A modern, responsive portfolio website showcasing my skills, projects, and conta
 
 ## Live Demo
 
-Visit the live website: [Portfolio Website](https://pavankumar0411mg.github.io/portfolio-website)
+Visit the live website: [Portfolio Website](https://pavankumar0411mg.github.io/portfolio-website/)
 
 ## Contact
 
