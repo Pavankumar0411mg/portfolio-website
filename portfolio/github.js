@@ -7,7 +7,22 @@ async function fetchGitHubProjects() {
         const repos = await response.json();
         
         if (response.ok) {
-            displayProjects(repos);
+            // Fetch releases for each repo
+            const reposWithReleases = await Promise.all(
+                repos.map(async (repo) => {
+                    try {
+                        const releaseResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${repo.name}/releases/latest`);
+                        if (releaseResponse.ok) {
+                            const release = await releaseResponse.json();
+                            repo.latestRelease = release;
+                        }
+                    } catch (error) {
+                        console.log(`No release found for ${repo.name}`);
+                    }
+                    return repo;
+                })
+            );
+            displayProjects(reposWithReleases);
         } else {
             console.error('Error fetching repositories:', repos.message);
         }
@@ -33,6 +48,8 @@ function displayProjects(repos) {
 function createProjectCard(repo) {
     const card = document.createElement('div');
     card.className = 'project-card';
+    card.style.cursor = 'pointer';
+    card.onclick = () => window.open(repo.html_url, '_blank');
     
     // Get primary language or default
     const language = repo.language || 'Code';
@@ -50,8 +67,9 @@ function createProjectCard(repo) {
                 ${repo.topics ? repo.topics.slice(0, 3).map(topic => `<span>${topic}</span>`).join('') : ''}
             </div>
             <div class="project-links">
-                ${repo.homepage ? `<a href="${repo.homepage}" target="_blank" class="btn small">Live Demo</a>` : ''}
-                <a href="${repo.html_url}" target="_blank" class="btn small secondary">GitHub</a>
+                ${repo.homepage ? `<a href="${repo.homepage}" target="_blank" class="btn small" onclick="event.stopPropagation()">Live Demo</a>` : `<a href="https://${GITHUB_USERNAME}.github.io/${repo.name}/" target="_blank" class="btn small" onclick="event.stopPropagation()">Live Demo</a>`}
+                ${repo.latestRelease ? `<a href="${repo.latestRelease.html_url}" target="_blank" class="btn small" onclick="event.stopPropagation()">Release</a>` : ''}
+                <a href="${repo.html_url}" target="_blank" class="btn small secondary" onclick="event.stopPropagation()">GitHub</a>
             </div>
         </div>
     `;
